@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Phan Site</title>
+<link rel="stylesheet" href="Life Stats Log.css">
+</head>
+<body><div class="wrap">
+<header>
+  <div class="date" id="hd"></div>
+  <nav>
+    <button class="tab on" data-t="today">Today</button>
+    <button class="tab" data-t="stats">Stats</button>
+    <button class="tab" data-t="hist">History</button>
+  </nav>
+</header>
+
+<div class="panel">
+  <svg id="star" viewBox="0 0 640 520"></svg>
+  <img class="joker-sticker" src="8yj0h552lk681-sticker.png" alt="" aria-hidden="true">
+</div>
+
+<div class="box general-box">
+  <h2>General level</h2>
+  <div class="general-summary">
+    <strong id="general-level">LV 1</strong>
+    <span id="general-total">0 total pts</span>
+    <span class="muted" id="general-next">0 / 200 pts to next level</span>
+  </div>
+  <div class="general-track" id="general-progress" role="progressbar" aria-label="General level progress" aria-valuemin="0" aria-valuemax="200" aria-valuenow="0" aria-valuetext="0 of 200 points">
+    <div class="general-fill" id="general-fill"></div>
+  </div>
+</div>
+
+<section id="today">
+  <div class="box">
+    <h2>Day</h2>
+    <div class="row">
+      <button class="btn sm" id="prev">◀</button>
+      <input type="date" id="dp">
+      <button class="btn sm" id="next">▶</button>
+      <button class="btn sm y" id="tod">Today</button>
+    </div>
+  </div>
+  <div class="box">
+    <h2>Log an achievement</h2>
+    <div class="row">
+      <select id="ls"></select>
+      <input type="number" id="la" value="1" title="Points (can be negative)">
+      <input class="grow" id="ln" placeholder="What did you do? (optional)">
+      <button class="btn y" id="ladd">+ Add</button>
+    </div>
+    <div id="ents"></div>
+  </div>
+  <div class="box">
+    <h2>Journal</h2>
+    <textarea id="jr" placeholder="Dear diary… write about your day."></textarea>
+    <div class="muted" id="saved">Auto-saved</div>
+  </div>
+</section>
+
+<section id="stats" class="hide">
+  <div class="box">
+    <h2>Your stats</h2>
+    <div class="row"><input class="grow" id="ns" placeholder="New stat name (Guts, Cooking, Coding…)"><button class="btn y" id="nadd">+ Add stat</button></div>
+    <div id="slist"></div>
+    <p class="muted">Set how many points each stat needs per level beside its name. New stats default to 10 points per level. Totals are computed from your daily logs.</p>
+  </div>
+  <div class="box">
+    <h2>Backup</h2>
+    <div class="row"><button class="btn sm" id="exp">Export JSON</button><button class="btn sm" id="imp">Import JSON</button></div>
+    <textarea id="bk" style="min-height:90px" placeholder="Exported data appears here. Paste data and press Import to restore."></textarea>
+  </div>
+</section>
+
+<section id="hist" class="hide">
+  <div class="box"><h2>Past days</h2><div id="hl"></div></div>
+</section>
+</div>
+
+<script>
+const KEY='statlog_v1';
+const RANKS=['Rookie','Novice','Adept','Skilled','Expert','Master','Legendary','Mythic','Transcendent'];
+let S={stats:[{id:'s1',n:'Knowledge'},{id:'s2',n:'Guts'},{id:'s3',n:'Charm'},{id:'s4',n:'Kindness'},{id:'s5',n:'Proficiency'}],days:{}};
+try{const r=localStorage.getItem(KEY);if(r){const p=JSON.parse(r);if(p&&p.stats&&p.days)S=p}}catch(e){}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
+const $=id=>document.getElementById(id);
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const fmt=d=>d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+const parse=k=>{const [y,m,d]=k.split('-').map(Number);return new Date(y,m-1,d)};
+let cur=fmt(new Date());
+const day=k=>S.days[k]||(S.days[k]={gains:[],journal:''});
+function totals(){const t={};S.stats.forEach(s=>t[s.id]=0);for(const k in S.days)S.days[k].gains.forEach(g=>{if(g.s in t)t[g.s]+=g.a});return t}
+function generalTotal(){let total=0;for(const k in S.days)S.days[k].gains.forEach(g=>{if(Number.isFinite(g.a))total+=g.a});return total}
+const pointsPerLevel=s=>Number.isSafeInteger(s.pointsPerLevel)&&s.pointsPerLevel>0?s.pointsPerLevel:10;
+const lvl=(p,step=10)=>Math.max(1,Math.floor(Math.max(p,0)/step)+1);
+const rank=l=>RANKS[Math.min(l-1,RANKS.length-1)]+(l>RANKS.length?' ∞':'');
+
+function drawGeneral(){
+  const total=generalTotal(),progress=Math.max(0,total)%200,level=lvl(total,200);
+  const shown=n=>Number(n.toFixed(2)).toString();
+  $('general-level').textContent=`LV ${level}`;
+  $('general-total').textContent=`${shown(total)} total pts`;
+  $('general-next').textContent=`${shown(progress)} / 200 pts to next level`;
+  $('general-fill').style.width=`${progress/2}%`;
+  $('general-progress').setAttribute('aria-valuenow',String(progress));
+  $('general-progress').setAttribute('aria-valuetext',`${shown(progress)} of 200 points; level ${level}`);
+}
+
+function drawStar(){
+  const t=totals(),n=S.stats.length,cx=320,cy=262,max=Math.max(10,...Object.values(t));
+  let h=`<defs><filter id="word-sticker" x="-30%" y="-45%" width="160%" height="190%" color-interpolation-filters="sRGB">
+    <feOffset in="SourceAlpha" dx="-10" dy="1" result="redOffset"/>
+    <feFlood flood-color="#ff0022" result="red"/>
+    <feComposite in="red" in2="redOffset" operator="in" result="redEdge"/>
+    <feOffset in="SourceAlpha" dx="10" dy="-1" result="cyanOffset"/>
+    <feFlood flood-color="#1cfeff" result="cyan"/>
+    <feComposite in="cyan" in2="cyanOffset" operator="in" result="cyanEdge"/>
+    <feMorphology in="SourceAlpha" operator="dilate" radius="7" result="outer"/>
+    <feFlood flood-color="#fff" result="white"/>
+    <feComposite in="white" in2="outer" operator="in" result="whiteOutline"/>
+    <feMorphology in="SourceAlpha" operator="dilate" radius="4" result="inner"/>
+    <feFlood flood-color="#000" result="black"/>
+    <feComposite in="black" in2="inner" operator="in" result="blackOutline"/>
+    <feMerge><feMergeNode in="redEdge"/><feMergeNode in="cyanEdge"/><feMergeNode in="whiteOutline"/><feMergeNode in="blackOutline"/><feMergeNode in="SourceGraphic"/></feMerge>
+  </filter></defs>`;
+  if(!n){$('star').innerHTML='<text x="320" y="260" fill="#fff" text-anchor="middle" font-size="22" font-family="Arial Black">ADD A STAT TO BEGIN</text>';return}
+  const pts=S.stats.map((s,i)=>{const a=-Math.PI/2+i*2*Math.PI/n;const r=30+110*Math.max(0,t[s.id])/max;return{s,a,x:cx+Math.cos(a)*r,y:cy+Math.sin(a)*r}});
+  // guide rings
+  [140,95,50].forEach(r=>h+=`<circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="#fff" stroke-opacity=".18" stroke-dasharray="4 5"/>`);
+  if(n>=3)h+=`<polygon points="${pts.map(p=>p.x.toFixed(1)+','+p.y.toFixed(1)).join(' ')}" fill="#ffc400" stroke="#000" stroke-width="4" stroke-linejoin="round"/>`;
+  else h+=`<circle cx="${cx}" cy="${cy}" r="70" fill="#ffc400" stroke="#000" stroke-width="4"/>`;
+  pts.forEach(p=>h+=`<circle cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="5" fill="#000"/>`);
+  S.stats.forEach((s,i)=>{
+    const p=Math.round(t[s.id]),l=lvl(p,pointsPerLevel(s)),w=Math.max(96,s.n.length*22+24);
+    const a=-Math.PI/2+i*2*Math.PI/n,x=Math.max(w/2+12,Math.min(640-w/2-12,cx+Math.cos(a)*232)),y=cy+Math.sin(a)*196;
+    const wobble=[-5,3,-7,2,0,5,-2,6],tilts=[-15,11,-5,8,-10,4,15,-2];
+    const fonts=["'Cooper Black','Arial Black',Impact,sans-serif","'Times New Roman',Georgia,serif","'Copperplate Gothic Bold','Arial Black',Impact,sans-serif","Impact,'Arial Black',sans-serif","Georgia,'Times New Roman',serif"];
+    const chars=Array.from(s.n),cell=(w-20)/Math.max(chars.length,1);
+    const letters=chars.map((c,j)=>{
+      if(c===' ')return `<g transform="translate(${(j-(chars.length-1)/2)*cell},0)"/>`;
+      const offset=wobble[(j+i)%wobble.length],tilt=tilts[(j+i)%tilts.length];
+      const code=c.codePointAt(0),size=14+(j*11+i*7+code)%12,font=fonts[(j*7+i*3+code)%fonts.length];
+      const variant=(code+j*3+i*5)%5,xpos=((j-(chars.length-1)/2)*cell).toFixed(1),char=esc(c);
+      if(variant===0)return `<g transform="translate(${xpos},${offset}) rotate(${tilt})"><rect x="${-cell/2+1}" y="-15" width="${cell-2}" height="29" fill="#fff"/><text y="7" text-anchor="middle" font-family="${font}" font-size="${size}" font-weight="900" fill="#000">${char}</text></g>`;
+      if(variant===1)return `<g transform="translate(${xpos},${offset}) rotate(${tilt})"><rect x="${-cell/2+1}" y="-15" width="${cell-2}" height="29" fill="#09090b"/><text y="7" text-anchor="middle" font-family="${font}" font-size="${size}" font-weight="900" fill="#fff">${char}</text></g>`;
+      return `<g transform="translate(${xpos},${offset}) rotate(${tilt})"><text y="7" text-anchor="middle" font-family="${font}" font-size="${size}" font-weight="900" fill="#fff">${char}</text></g>`;
+    }).join('');
+    h+=`<g transform="translate(${x.toFixed(1)},${y.toFixed(1)})">
+      <g transform="rotate(-4) skewX(-8)" filter="url(#word-sticker)">${letters}</g>
+      <text y="36" text-anchor="middle" font-family="Arial Black,sans-serif" font-size="14" fill="#fff" stroke="#000" stroke-width="3" paint-order="stroke" font-style="italic">LV ${l} · ${rank(l)}</text>
+      <text y="53" text-anchor="middle" font-family="Arial Black,sans-serif" font-size="12" fill="#ffe600" stroke="#000" stroke-width="3" paint-order="stroke">${p} PTS</text></g>`;
+  });
+  $('star').innerHTML=h;
+}
+
+function header(){
+  const d=parse(cur);
+  $('hd').innerHTML=`${d.getMonth()+1}/${d.getDate()} ${d.toLocaleDateString('en',{weekday:'long'}).toUpperCase()}<small>${d.getFullYear()}${cur===fmt(new Date())?' · TODAY':''}</small>`;
+  $('dp').value=cur;
+}
+function drawToday(){
+  header();
+  $('ls').innerHTML=S.stats.map(s=>`<option value="${s.id}">${esc(s.n)}</option>`).join('')||'<option value="">(add a stat first)</option>';
+  const d=S.days[cur]||{gains:[],journal:''};
+  $('ents').innerHTML=d.gains.length?d.gains.map((g,i)=>{const st=S.stats.find(x=>x.id===g.s);return `<div class="entry"><span class="amt ${g.a<0?'neg':''}">${g.a>0?'+':''}${g.a}</span><b>${st?esc(st.n):'(deleted stat)'}</b><span class="n">${esc(g.note||'')}</span><button class="btn sm" data-del="${i}">✕</button></div>`}).join(''):'<div class="muted">No achievements logged for this day yet.</div>';
+  $('jr').value=d.journal||'';
+}
+function drawStats(){
+  const t=totals();
+  $('slist').innerHTML=S.stats.map(s=>`<div class="statrow"><input class="grow" value="${esc(s.n)}" data-ren="${s.id}" aria-label="Stat name"><label class="threshold">Points / level<input class="threshold-input" type="number" min="1" step="1" required value="${pointsPerLevel(s)}" data-req="${s.id}" aria-label="Points required per level for ${esc(s.n)}"></label><span class="chip">LV ${lvl(t[s.id],pointsPerLevel(s))} · ${Math.round(t[s.id])} pts</span><button class="btn sm" data-rm="${s.id}">Delete</button></div>`).join('')||'<div class="muted">No stats yet.</div>';
+}
+function drawHist(){
+  const ks=Object.keys(S.days).filter(k=>S.days[k].gains.length||(S.days[k].journal||'').trim()).sort().reverse();
+  $('hl').innerHTML=ks.length?ks.map(k=>{const d=S.days[k],dt=parse(k);
+    const sum={};d.gains.forEach(g=>sum[g.s]=(sum[g.s]||0)+g.a);
+    const chips=Object.keys(sum).map(id=>{const s=S.stats.find(x=>x.id===id);return `<span class="chip">${s?esc(s.n):'?'} ${sum[id]>0?'+':''}${sum[id]}</span>`}).join('');
+    const j=(d.journal||'').trim();
+    return `<div class="day" data-go="${k}"><b>${dt.toLocaleDateString('en',{weekday:'short',month:'short',day:'numeric',year:'numeric'})}</b><div>${chips}</div>${j?`<div class="muted" style="margin-top:4px">${esc(j.length>140?j.slice(0,140)+'…':j)}</div>`:''}</div>`}).join(''):'<div class="muted">Nothing logged yet. Your past days will show up here.</div>';
+}
+function all(){drawStar();drawGeneral();drawToday();drawStats();drawHist()}
+
+document.querySelectorAll('.tab').forEach(b=>b.onclick=()=>{
+  document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('on',x===b));
+  ['today','stats','hist'].forEach(id=>$(id).classList.toggle('hide',id!==b.dataset.t));
+  if(b.dataset.t==='hist')drawHist();if(b.dataset.t==='stats')drawStats();
+});
+function go(k){cur=k;drawToday()}
+function shift(n){const d=parse(cur);d.setDate(d.getDate()+n);go(fmt(d))}
+$('prev').onclick=()=>shift(-1);$('next').onclick=()=>shift(1);$('tod').onclick=()=>go(fmt(new Date()));
+$('dp').onchange=e=>{if(e.target.value)go(e.target.value)};
+$('ladd').onclick=()=>{
+  const s=$('ls').value,a=parseFloat($('la').value);
+  if(!s||!isFinite(a)||a===0)return;
+  day(cur).gains.push({s,a,note:$('ln').value.trim()});
+  $('ln').value='';save();drawToday();drawStar();drawGeneral();
+};
+$('ln').onkeydown=e=>{if(e.key==='Enter')$('ladd').click()};
+$('ents').onclick=e=>{const i=e.target.dataset.del;if(i===undefined)return;day(cur).gains.splice(+i,1);save();drawToday();drawStar();drawGeneral()};
+let tm;$('jr').oninput=e=>{day(cur).journal=e.target.value;$('saved').textContent='Saving…';clearTimeout(tm);tm=setTimeout(()=>{save();$('saved').textContent='Auto-saved'},400)};
+$('nadd').onclick=()=>{const n=$('ns').value.trim();if(!n)return;S.stats.push({id:'s'+Date.now().toString(36)+Math.random().toString(36).slice(2,5),n,pointsPerLevel:10});$('ns').value='';save();all()};
+$('ns').onkeydown=e=>{if(e.key==='Enter')$('nadd').click()};
+$('slist').onchange=e=>{
+  const id=e.target.dataset.ren;
+  if(id){const s=S.stats.find(x=>x.id===id);if(s&&e.target.value.trim()){s.n=e.target.value.trim();save();drawStar();drawToday()}return}
+  const reqId=e.target.dataset.req;
+  if(!reqId)return;
+  const value=Number(e.target.value);
+  if(!e.target.reportValidity()||!Number.isSafeInteger(value)||value<1)return;
+  const s=S.stats.find(x=>x.id===reqId);
+  if(s){s.pointsPerLevel=value;save();all()}
+};
+$('slist').onclick=e=>{const id=e.target.dataset.rm;if(!id)return;const s=S.stats.find(x=>x.id===id);
+  if(s&&confirm('Delete "'+s.n+'"? Its logged points will no longer count.')){S.stats=S.stats.filter(x=>x.id!==id);save();all()}};
+$('hl').onclick=e=>{const el=e.target.closest('[data-go]');if(!el)return;cur=el.dataset.go;document.querySelector('[data-t=today]').click();drawToday();scrollTo(0,0)};
+$('exp').onclick=()=>{$('bk').value=JSON.stringify(S)};
+$('imp').onclick=()=>{try{const p=JSON.parse($('bk').value);if(p.stats&&p.days&&confirm('Replace all current data?')){S=p;save();all()}}catch(e){alert('Invalid data')}};
+all();
+</script></body></html>
