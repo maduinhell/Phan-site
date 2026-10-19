@@ -2,33 +2,59 @@
 <html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Phan Site</title>
+<link rel="icon" href="animation-assets/8yj0h552lk681-sticker.png" type="image/png">
 <link rel="stylesheet" href="Life Stats Log.css">
 </head>
 <body><div class="wrap">
 <header>
-  <div class="date" id="hd"></div>
   <nav>
     <button class="tab on" data-t="today">Today</button>
-    <button class="tab" data-t="stats">Stats</button>
-    <button class="tab" data-t="hist">History</button>
+    <div class="general-level-summary">
+      <span class="general-label">General level</span>
+      <div class="general-summary">
+        <strong id="general-level">LV 1</strong>
+        <span class="muted" id="general-next">0 / 200 pts to next level</span>
+      </div>
+      <svg class="general-track" id="general-progress" viewBox="0 0 100 100" preserveAspectRatio="none" role="progressbar" aria-label="General level progress" aria-valuemin="0" aria-valuemax="200" aria-valuenow="0" aria-valuetext="0 of 200 points"></svg>
+    </div>
+    <div class="settings-menu">
+      <button class="tab settings-toggle" id="settings-toggle" type="button" aria-label="Settings" title="Settings" aria-haspopup="true" aria-expanded="false" aria-controls="settings-options">
+        <svg class="settings-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+          <path d="M10 2h4l.6 3.1c.8.2 1.5.5 2.2.9l2.9-1.2 2 3.4-2.3 2.1a8.8 8.8 0 0 1 0 2.4l2.3 2.1-2 3.4-2.9-1.2c-.7.4-1.4.7-2.2.9L14 22h-4l-.6-3.1c-.8-.2-1.5-.5-2.2-.9l-2.9 1.2-2-3.4 2.3-2.1a8.8 8.8 0 0 1 0-2.4L2.3 9.2l2-3.4 2.9 1.2c.7-.4 1.4-.7 2.2-.9L10 2Z"/>
+          <circle cx="12" cy="12" r="3"/>
+        </svg>
+      </button>
+      <div class="settings-options" id="settings-options" hidden>
+        <button class="tab" data-t="stats">Stats</button>
+        <button class="tab" data-t="hist">History</button>
+        <button class="tab" type="button">Style</button>
+      </div>
+    </div>
   </nav>
 </header>
 
 <div class="panel">
-  <svg id="star" viewBox="0 0 640 520"></svg>
-  <img class="joker-sticker" src="8yj0h552lk681-sticker.png" alt="" aria-hidden="true">
-</div>
-
-<div class="box general-box">
-  <h2>General level</h2>
-  <div class="general-summary">
-    <strong id="general-level">LV 1</strong>
-    <span id="general-total">0 total pts</span>
-    <span class="muted" id="general-next">0 / 200 pts to next level</span>
+  <div class="stats-graphic">
+    <svg id="star" viewBox="0 0 640 520"></svg>
+    <div id="stat-add-buttons" role="group" aria-label="Log an achievement for a stat"></div>
   </div>
-  <div class="general-track" id="general-progress" role="progressbar" aria-label="General level progress" aria-valuemin="0" aria-valuemax="200" aria-valuenow="0" aria-valuetext="0 of 200 points">
-    <div class="general-fill" id="general-fill"></div>
+  <div class="rank-up-overlay" id="rank-up-overlay" role="status" aria-live="polite" aria-atomic="true" hidden></div>
+  <div class="date panel-calendar" id="hd" role="img" aria-label="Persona 5 calendar">
+    <div class="p5-calendar-art" aria-hidden="true">
+      <img class="p5-calendar-layer" data-calendar-layer="day-bottom" alt="">
+      <img class="p5-calendar-layer" data-calendar-layer="month-bottom" alt="">
+      <img class="p5-calendar-layer" data-calendar-layer="weekday-bottom" alt="">
+      <img class="p5-calendar-layer" data-calendar-layer="time-of-day" alt="">
+      <img class="p5-calendar-layer" data-calendar-layer="day-middle" alt="">
+      <img class="p5-calendar-layer" data-calendar-layer="month-middle" alt="">
+      <img class="p5-calendar-layer" data-calendar-layer="weekday-middle" alt="">
+      <img class="p5-calendar-layer" data-calendar-layer="day-top" alt="">
+      <img class="p5-calendar-layer" data-calendar-layer="month-top" alt="">
+      <img class="p5-calendar-layer" data-calendar-layer="weekday-top" alt="">
+      <small id="calendar-meta"></small>
+    </div>
   </div>
+  <img class="joker-sticker" src="animation-assets/8yj0h552lk681-sticker.png" alt="" aria-hidden="true">
 </div>
 
 <section id="today">
@@ -41,16 +67,22 @@
       <button class="btn sm y" id="tod">Today</button>
     </div>
   </div>
-  <div class="box">
-    <h2>Log an achievement</h2>
-    <div class="row">
-      <select id="ls"></select>
-      <input type="number" id="la" value="1" title="Points (can be negative)">
-      <input class="grow" id="ln" placeholder="What did you do? (optional)">
-      <button class="btn y" id="ladd">+ Add</button>
+  <dialog class="achievement-dialog" id="achievement-dialog" aria-labelledby="achievement-title">
+    <div class="achievement-dialog-heading">
+      <h2 id="achievement-title">Log an achievement</h2>
+      <button class="btn sm dialog-close" id="achievement-close" type="button" aria-label="Close achievement form">✕</button>
     </div>
+    <p class="muted achievement-date" id="achievement-date"></p>
+    <p class="achievement-stat-label">Adding to <strong id="achievement-stat"></strong></p>
+    <form id="achievement-form">
+      <div class="row">
+        <input type="number" id="la" value="1" step="any" required title="Points (can be negative)" aria-label="Points (can be negative)">
+        <input class="grow" id="ln" placeholder="What did you do? (optional)" aria-label="What did you do? (optional)">
+        <button class="btn y" type="submit">+ Add</button>
+      </div>
+    </form>
     <div id="ents"></div>
-  </div>
+  </dialog>
   <div class="box">
     <h2>Journal</h2>
     <textarea id="jr" placeholder="Dear diary… write about your day."></textarea>
@@ -67,6 +99,7 @@
   </div>
   <div class="box">
     <h2>Backup</h2>
+    <div class="row"><button class="btn sm" id="connect-file">Connect stats.json</button><span class="muted" id="file-status" role="status" aria-live="polite">Select stats.json once to enable automatic import and saving.</span></div>
     <div class="row"><button class="btn sm" id="exp">Export JSON</button><button class="btn sm" id="imp">Import JSON</button></div>
     <textarea id="bk" style="min-height:90px" placeholder="Exported data appears here. Paste data and press Import to restore."></textarea>
   </div>
@@ -79,11 +112,154 @@
 
 <script>
 const KEY='statlog_v1';
+const FILE_DB='statlog-file-access',FILE_STORE='handles',FILE_HANDLE_KEY='stats-json';
 const RANKS=['Rookie','Novice','Adept','Skilled','Expert','Master','Legendary','Mythic','Transcendent'];
+const POINTS_INCREASE_SOUND='animation-assets/points-increase.mp3';
 let S={stats:[{id:'s1',n:'Knowledge'},{id:'s2',n:'Guts'},{id:'s3',n:'Charm'},{id:'s4',n:'Kindness'},{id:'s5',n:'Proficiency'}],days:{}};
 try{const r=localStorage.getItem(KEY);if(r){const p=JSON.parse(r);if(p&&p.stats&&p.days)S=p}}catch(e){}
-function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
 const $=id=>document.getElementById(id);
+let statsFileHandle=null,fileWriteQueue=Promise.resolve();
+let pointsIncreaseAudio=null;
+const statProgressShapes=new Map();
+const statProgressTotals=new Map();
+const statProgressAnimationStates=new Map();
+function playPointsIncreaseSound(){
+  if(typeof Audio==='undefined'){
+    console.warn('Audio playback is unavailable; the points-increase sound could not be played.');
+    return;
+  }
+  try{
+    pointsIncreaseAudio ||= new Audio(POINTS_INCREASE_SOUND);
+    pointsIncreaseAudio.currentTime=0;
+    const playback=pointsIncreaseAudio.play();
+    if(playback)playback.catch(error=>console.error('Playing the points-increase sound failed:',error));
+  }catch(error){
+    console.error('Playing the points-increase sound failed:',error);
+  }
+}
+function getStatProgressShape(id){
+  if(!statProgressShapes.has(id)){
+    statProgressShapes.set(id,{
+      leftTop:+(Math.random()*2).toFixed(1),
+      topRight:+(96+Math.random()*3).toFixed(1),
+      topY:+(0.6+Math.random()*1.2).toFixed(1),
+      rightBottom:+(88+Math.random()*7).toFixed(1),
+      bottomY:+(7+Math.random()*1.2).toFixed(1),
+      leftBottom:+(1+Math.random()*3).toFixed(1)
+    });
+  }
+  return statProgressShapes.get(id);
+}
+let rankUpTimer;
+function showRankUps(rankUps){
+  const overlay=$('rank-up-overlay');
+  overlay.innerHTML=`<div class="rank-up-card">
+    <span class="rank-up-kicker">PERSONAL GROWTH</span>
+    <img class="rank-up-image" src="animation-assets/rank-up.svg" alt="Rank up!">
+    <div class="rank-up-list">${rankUps.map(({name,previousLevel,level,newRank})=>`<div class="rank-up-result"><b>${esc(name)}</b><span>LV ${previousLevel} &rarr; LV ${level} · ${esc(newRank)}</span></div>`).join('')}</div>
+  </div>`;
+  overlay.hidden=false;
+  overlay.classList.remove('is-visible');
+  void overlay.offsetWidth;
+  overlay.classList.add('is-visible');
+  clearTimeout(rankUpTimer);
+  rankUpTimer=setTimeout(()=>{
+    overlay.classList.remove('is-visible');
+    overlay.hidden=true;
+  },2700);
+}
+function setFileStatus(message,isError=false){$('file-status').textContent=message;$('file-status').classList.toggle('error',isError)}
+function openFileDb(){
+  return new Promise((resolve,reject)=>{
+    const request=indexedDB.open(FILE_DB,1);
+    request.onupgradeneeded=()=>request.result.createObjectStore(FILE_STORE);
+    request.onsuccess=()=>resolve(request.result);
+    request.onerror=()=>reject(request.error||new Error('Could not open browser file permissions storage.'));
+  });
+}
+async function getSavedFileHandle(){
+  const db=await openFileDb();
+  return new Promise((resolve,reject)=>{
+    const request=db.transaction(FILE_STORE,'readonly').objectStore(FILE_STORE).get(FILE_HANDLE_KEY);
+    request.onsuccess=()=>{db.close();resolve(request.result||null)};
+    request.onerror=()=>{db.close();reject(request.error||new Error('Could not load the saved stats.json file connection.'))};
+  });
+}
+async function storeFileHandle(handle){
+  const db=await openFileDb();
+  return new Promise((resolve,reject)=>{
+    const transaction=db.transaction(FILE_STORE,'readwrite');
+    transaction.objectStore(FILE_STORE).put(handle,FILE_HANDLE_KEY);
+    transaction.oncomplete=()=>{db.close();resolve()};
+    transaction.onerror=()=>{db.close();reject(transaction.error||new Error('Could not remember the stats.json file connection.'))};
+    transaction.onabort=()=>{db.close();reject(transaction.error||new Error('Could not remember the stats.json file connection.'))};
+  });
+}
+function parseStatsFile(text){
+  const data=JSON.parse(text);
+  if(!data||!Array.isArray(data.stats)||!data.days||typeof data.days!=='object'||Array.isArray(data.days))throw new Error('stats.json must contain a stats array and days object.');
+  return data;
+}
+function save(){
+  const snapshot=JSON.stringify(S);
+  try{localStorage.setItem(KEY,snapshot)}catch(error){setFileStatus(`Browser backup failed: ${error.message}`,true)}
+  if(!statsFileHandle)return;
+  const handle=statsFileHandle;
+  setFileStatus('Saving changes to stats.json…');
+  fileWriteQueue=fileWriteQueue.then(async()=>{
+    const permission=await handle.queryPermission({mode:'readwrite'});
+    if(permission!=='granted')throw new Error('File permission expired. Reconnect stats.json to continue saving.');
+    const writable=await handle.createWritable();
+    await writable.write(snapshot);
+    await writable.close();
+    if(statsFileHandle===handle)setFileStatus('Connected · saved to stats.json.');
+  }).catch(error=>{
+    if(statsFileHandle===handle)setFileStatus(`Could not save stats.json: ${error.message}`,true);
+    console.error('Saving stats.json failed:',error);
+  });
+}
+async function importConnectedFile(handle){
+  const file=await handle.getFile();
+  S=parseStatsFile(await file.text());
+  statsFileHandle=handle;
+  try{localStorage.setItem(KEY,JSON.stringify(S))}catch(error){setFileStatus(`Imported stats.json, but the browser backup failed: ${error.message}`,true)}
+  all();
+}
+async function initializeFileConnection(){
+  try{
+    statsFileHandle=await getSavedFileHandle();
+    if(!statsFileHandle){setFileStatus('Select stats.json once to enable automatic import and saving.');return}
+    const permission=await statsFileHandle.queryPermission({mode:'readwrite'});
+    if(permission!=='granted'){setFileStatus('Reconnect stats.json to import and save automatically.');return}
+    await importConnectedFile(statsFileHandle);
+    setFileStatus('Connected · imported stats.json.');
+  }catch(error){
+    statsFileHandle=null;
+    setFileStatus(`Could not import stats.json: ${error.message}`,true);
+    console.error('Loading stats.json failed:',error);
+  }
+}
+async function connectStatsFile(){
+  try{
+    let handle=statsFileHandle;
+    if(handle){
+      const permission=await handle.requestPermission({mode:'readwrite'});
+      if(permission!=='granted')throw new Error('Write permission was not granted for stats.json.');
+    }else{
+      if(!window.showOpenFilePicker)throw new Error('This browser does not support direct file access. Open the site in a supported browser.');
+      [handle]=await window.showOpenFilePicker({multiple:false,types:[{description:'JSON files',accept:{'application/json':['.json']}}]});
+      const permission=await handle.requestPermission({mode:'readwrite'});
+      if(permission!=='granted')throw new Error('Write permission was not granted for stats.json.');
+    }
+    await importConnectedFile(handle);
+    await storeFileHandle(handle);
+    setFileStatus('Connected · imported stats.json.');
+  }catch(error){
+    if(error.name==='AbortError')return;
+    setFileStatus(`Could not connect stats.json: ${error.message}`,true);
+    console.error('Connecting stats.json failed:',error);
+  }
+}
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const fmt=d=>d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
 const parse=k=>{const [y,m,d]=k.split('-').map(Number);return new Date(y,m-1,d)};
@@ -97,41 +273,100 @@ const rank=l=>RANKS[Math.min(l-1,RANKS.length-1)]+(l>RANKS.length?' ∞':'');
 
 function drawGeneral(){
   const total=generalTotal(),progress=Math.max(0,total)%200,level=lvl(total,200);
+  const track=$('general-progress');
+  const previousTotal=track.dataset.total;
+  const firstRender=previousTotal===undefined;
+  const progressChanged=!firstRender&&Number(previousTotal)!==total;
+  if(!track.dataset.shape){
+    const topLeft=+(Math.random()*2).toFixed(1),topRight=+(96+Math.random()*3).toFixed(1),topY=+(6+Math.random()*12).toFixed(1);
+    const bottomRight=+(88+Math.random()*7).toFixed(1),bottomY=+(70+Math.random()*12).toFixed(1),bottomLeft=+(1+Math.random()*3).toFixed(1);
+    track.dataset.shape=JSON.stringify({topLeft,topRight,topY,bottomRight,bottomY,bottomLeft});
+  }
+  const shape=JSON.parse(track.dataset.shape),amount=Math.max(0,total)%200/200;
+  const topX=shape.topLeft+(shape.topRight-shape.topLeft)*amount,topY=shape.topY*amount;
+  const bottomX=shape.bottomLeft+(shape.bottomRight-shape.bottomLeft)*amount,bottomY=100+(shape.bottomY-100)*amount;
+  const outline=`${shape.topLeft},0 ${shape.topRight},${shape.topY} ${shape.bottomRight},${shape.bottomY} ${shape.bottomLeft},100`;
+  const fill=`${shape.topLeft},0 ${topX.toFixed(1)},${topY.toFixed(1)} ${bottomX.toFixed(1)},${bottomY.toFixed(1)} ${shape.bottomLeft},100`;
+  const pointsIncreased=!firstRender&&total>Number(previousTotal);
+  const reward=pointsIncreased?`<g class="progress-reward" aria-hidden="true" transform="translate(${Math.max(12,Math.min(70,topX)).toFixed(1)} 0) scale(.16 5.55)">
+    <g transform="translate(-3 -10)"><image class="progress-reward-sparkle" href="animation-assets/progress-sparkle.svg" x="-12" y="-10" width="18" height="20"/></g>
+    <g transform="translate(7 -15)"><image class="progress-reward-note" href="animation-assets/music-note.svg" x="-4" y="-5" width="22" height="22" style="--reward-delay:90ms"/></g>
+    <g transform="translate(19 -11)"><image class="progress-reward-note" href="animation-assets/music-note.svg" x="-4" y="-5" width="22" height="22" style="--reward-delay:180ms"/></g>
+  </g>`:'';
+  if(firstRender||progressChanged){
+    track.innerHTML=`<polygon class="general-progress-track" points="${outline}"/>
+      <polygon class="general-progress-fill${firstRender?' is-opening':' is-progressing'}" points="${fill}"/>
+      ${reward}`;
+  }
+  track.dataset.total=String(total);
   const shown=n=>Number(n.toFixed(2)).toString();
   $('general-level').textContent=`LV ${level}`;
-  $('general-total').textContent=`${shown(total)} total pts`;
   $('general-next').textContent=`${shown(progress)} / 200 pts to next level`;
-  $('general-fill').style.width=`${progress/2}%`;
-  $('general-progress').setAttribute('aria-valuenow',String(progress));
-  $('general-progress').setAttribute('aria-valuetext',`${shown(progress)} of 200 points; level ${level}`);
+  track.setAttribute('aria-valuenow',String(progress));
+  track.setAttribute('aria-valuetext',`${shown(progress)} of 200 points; level ${level}`);
 }
 
 function drawStar(){
-  const t=totals(),n=S.stats.length,cx=320,cy=262,max=Math.max(10,...Object.values(t));
+  const t=totals(),n=S.stats.length,cx=320,cy=262,levels=S.stats.map(s=>lvl(t[s.id],pointsPerLevel(s))-1);
+  const radiusPerLevel=640*0.03;
+  const rankUps=[];
+  const addButtons=[];
   let h=`<defs><filter id="word-sticker" x="-30%" y="-45%" width="160%" height="190%" color-interpolation-filters="sRGB">
-    <feOffset in="SourceAlpha" dx="-10" dy="1" result="redOffset"/>
-    <feFlood flood-color="#ff0022" result="red"/>
-    <feComposite in="red" in2="redOffset" operator="in" result="redEdge"/>
-    <feOffset in="SourceAlpha" dx="10" dy="-1" result="cyanOffset"/>
-    <feFlood flood-color="#1cfeff" result="cyan"/>
-    <feComposite in="cyan" in2="cyanOffset" operator="in" result="cyanEdge"/>
     <feMorphology in="SourceAlpha" operator="dilate" radius="7" result="outer"/>
     <feFlood flood-color="#fff" result="white"/>
     <feComposite in="white" in2="outer" operator="in" result="whiteOutline"/>
     <feMorphology in="SourceAlpha" operator="dilate" radius="4" result="inner"/>
     <feFlood flood-color="#000" result="black"/>
     <feComposite in="black" in2="inner" operator="in" result="blackOutline"/>
-    <feMerge><feMergeNode in="redEdge"/><feMergeNode in="cyanEdge"/><feMergeNode in="whiteOutline"/><feMergeNode in="blackOutline"/><feMergeNode in="SourceGraphic"/></feMerge>
+    <feMerge><feMergeNode in="whiteOutline"/><feMergeNode in="blackOutline"/><feMergeNode in="SourceGraphic"/></feMerge>
   </filter></defs>`;
-  if(!n){$('star').innerHTML='<text x="320" y="260" fill="#fff" text-anchor="middle" font-size="22" font-family="Arial Black">ADD A STAT TO BEGIN</text>';return}
-  const pts=S.stats.map((s,i)=>{const a=-Math.PI/2+i*2*Math.PI/n;const r=30+110*Math.max(0,t[s.id])/max;return{s,a,x:cx+Math.cos(a)*r,y:cy+Math.sin(a)*r}});
+  if(!n){$('star').innerHTML='<text x="320" y="260" fill="#fff" text-anchor="middle" font-size="22" font-family="Arial Black">ADD A STAT TO BEGIN</text>';$('stat-add-buttons').innerHTML='';return}
+  const pts=S.stats.map((s,i)=>{const a=-Math.PI/2+i*2*Math.PI/n;const r=30+levels[i]*radiusPerLevel;return{s,a,x:cx+Math.cos(a)*r,y:cy+Math.sin(a)*r}});
   // guide rings
   [140,95,50].forEach(r=>h+=`<circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="#fff" stroke-opacity=".18" stroke-dasharray="4 5"/>`);
-  if(n>=3)h+=`<polygon points="${pts.map(p=>p.x.toFixed(1)+','+p.y.toFixed(1)).join(' ')}" fill="#ffc400" stroke="#000" stroke-width="4" stroke-linejoin="round"/>`;
+  if(n>=3){
+    const starPoints=pts.flatMap((p,i)=>{
+      const next=pts[(i+1)%n],angle=p.a+Math.PI/n;
+      const radius=(Math.hypot(p.x-cx,p.y-cy)+Math.hypot(next.x-cx,next.y-cy))*0.18;
+      return [p,{x:cx+Math.cos(angle)*radius,y:cy+Math.sin(angle)*radius}];
+    });
+    const coords=points=>points.map(p=>p.x.toFixed(1)+','+p.y.toFixed(1)).join(' ');
+    h+=`<polygon class="star-outline" points="${coords(starPoints)}"/>`;
+    starPoints.forEach((p,i)=>{
+      const next=starPoints[(i+1)%starPoints.length],shade=i%2?'light':'dark';
+      h+=`<polygon class="star-facet ${shade}" points="${cx},${cy} ${p.x.toFixed(1)},${p.y.toFixed(1)} ${next.x.toFixed(1)},${next.y.toFixed(1)}"/>`;
+    });
+    h+=`<polygon class="star-outline" points="${coords(starPoints)}"/>`;
+  }
   else h+=`<circle cx="${cx}" cy="${cy}" r="70" fill="#ffc400" stroke="#000" stroke-width="4"/>`;
   pts.forEach(p=>h+=`<circle cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="5" fill="#000"/>`);
   S.stats.forEach((s,i)=>{
-    const p=Math.round(t[s.id]),l=lvl(p,pointsPerLevel(s)),w=Math.max(96,s.n.length*22+24);
+    const total=t[s.id],p=Math.round(total),step=pointsPerLevel(s),l=lvl(p,step),progress=Math.max(0,total)%step/step,barWidth=34+(i%4)*7,w=Math.max(96,s.n.length*22+24);
+    const previousTotal=statProgressTotals.get(s.id),animationState=statProgressAnimationStates.get(s.id),now=performance.now();
+    const pointsIncreased=previousTotal!==undefined&&total>previousTotal;
+    if(pointsIncreased){
+      const previousLevel=lvl(Math.round(previousTotal),step);
+      if(l>previousLevel)rankUps.push({name:s.n,previousLevel,level:l,newRank:rank(l)});
+    }
+    let animationKind='';
+    if(previousTotal===undefined){
+      animationKind='opening';
+      statProgressAnimationStates.set(s.id,{total,kind:animationKind,until:now+950});
+    }else if(previousTotal!==total){
+      animationKind='progressing';
+      statProgressAnimationStates.set(s.id,{total,kind:animationKind,until:now+700});
+    }else if(animationState&&animationState.total===total&&now<animationState.until){
+      animationKind=animationState.kind;
+    }
+    const shape=getStatProgressShape(s.id),topX=shape.leftTop+(shape.topRight-shape.leftTop)*progress,topY=shape.topY*progress;
+    const bottomX=shape.leftBottom+(shape.rightBottom-shape.leftBottom)*progress,bottomY=10+(shape.bottomY-10)*progress;
+    const trackPoints=`${shape.leftTop},0 ${shape.topRight},${shape.topY} ${shape.rightBottom},${shape.bottomY} ${shape.leftBottom},10`;
+    const fillPoints=`${shape.leftTop},0 ${topX.toFixed(1)},${topY.toFixed(1)} ${bottomX.toFixed(1)},${bottomY.toFixed(1)} ${shape.leftBottom},10`;
+    const rewardMarkup=pointsIncreased?`<g class="progress-reward" aria-hidden="true" transform="translate(${Math.max(12,Math.min(70,topX)).toFixed(1)} 0)">
+      <g transform="translate(-3 -10)"><image class="progress-reward-sparkle" href="animation-assets/progress-sparkle.svg" x="-12" y="-10" width="18" height="20"/></g>
+      <g transform="translate(7 -15)"><image class="progress-reward-note" href="animation-assets/music-note.svg" x="-4" y="-5" width="22" height="22" style="--reward-delay:90ms"/></g>
+      <g transform="translate(19 -11)"><image class="progress-reward-note" href="animation-assets/music-note.svg" x="-4" y="-5" width="22" height="22" style="--reward-delay:180ms"/></g>
+    </g>`:'';
     const a=-Math.PI/2+i*2*Math.PI/n,x=Math.max(w/2+12,Math.min(640-w/2-12,cx+Math.cos(a)*232)),y=cy+Math.sin(a)*196;
     const wobble=[-5,3,-7,2,0,5,-2,6],tilts=[-15,11,-5,8,-10,4,15,-2];
     const fonts=["'Cooper Black','Arial Black',Impact,sans-serif","'Times New Roman',Georgia,serif","'Copperplate Gothic Bold','Arial Black',Impact,sans-serif","Impact,'Arial Black',sans-serif","Georgia,'Times New Roman',serif"];
@@ -141,33 +376,74 @@ function drawStar(){
       const offset=wobble[(j+i)%wobble.length],tilt=tilts[(j+i)%tilts.length];
       const code=c.codePointAt(0),size=14+(j*11+i*7+code)%12,font=fonts[(j*7+i*3+code)%fonts.length];
       const variant=(code+j*3+i*5)%5,xpos=((j-(chars.length-1)/2)*cell).toFixed(1),char=esc(c);
-      if(variant===0)return `<g transform="translate(${xpos},${offset}) rotate(${tilt})"><rect x="${-cell/2+1}" y="-15" width="${cell-2}" height="29" fill="#fff"/><text y="7" text-anchor="middle" font-family="${font}" font-size="${size}" font-weight="900" fill="#000">${char}</text></g>`;
-      if(variant===1)return `<g transform="translate(${xpos},${offset}) rotate(${tilt})"><rect x="${-cell/2+1}" y="-15" width="${cell-2}" height="29" fill="#09090b"/><text y="7" text-anchor="middle" font-family="${font}" font-size="${size}" font-weight="900" fill="#fff">${char}</text></g>`;
-      return `<g transform="translate(${xpos},${offset}) rotate(${tilt})"><text y="7" text-anchor="middle" font-family="${font}" font-size="${size}" font-weight="900" fill="#fff">${char}</text></g>`;
+      const rotationPhase=(i*97+j*173)%600;
+      const wrapFloat=letter=>`<g class="stat-letter-float" style="--float-delay:${(i*113+j*157)%1100}ms"><g class="stat-letter-rotation" style="--rotation-delay:-${rotationPhase}ms">${letter}</g></g>`;
+      if(variant===0)return wrapFloat(`<g transform="translate(${xpos},${offset}) rotate(${tilt})"><rect x="${-cell/2+1}" y="-15" width="${cell-2}" height="29" fill="#fff"/><text y="7" text-anchor="middle" font-family="${font}" font-size="${size}" font-weight="900" fill="#000">${char}</text></g>`);
+      if(variant===1)return wrapFloat(`<g transform="translate(${xpos},${offset}) rotate(${tilt})"><rect x="${-cell/2+1}" y="-15" width="${cell-2}" height="29" fill="#09090b"/><text y="7" text-anchor="middle" font-family="${font}" font-size="${size}" font-weight="900" fill="#fff">${char}</text></g>`);
+      return wrapFloat(`<g transform="translate(${xpos},${offset}) rotate(${tilt})"><text y="7" text-anchor="middle" font-family="${font}" font-size="${size}" font-weight="900" fill="#fff">${char}</text></g>`);
     }).join('');
     h+=`<g transform="translate(${x.toFixed(1)},${y.toFixed(1)})">
       <g transform="rotate(-4) skewX(-8)" filter="url(#word-sticker)">${letters}</g>
       <text y="36" text-anchor="middle" font-family="Arial Black,sans-serif" font-size="14" fill="#fff" stroke="#000" stroke-width="3" paint-order="stroke" font-style="italic">LV ${l} · ${rank(l)}</text>
-      <text y="53" text-anchor="middle" font-family="Arial Black,sans-serif" font-size="12" fill="#ffe600" stroke="#000" stroke-width="3" paint-order="stroke">${p} PTS</text></g>`;
+      <text x="-5" y="53" text-anchor="end" font-family="Arial Black,sans-serif" font-size="12" fill="#ffe600" stroke="#000" stroke-width="3" paint-order="stroke">${p} PTS</text>
+      <svg class="stat-progress" x="3" y="42" width="${barWidth}" height="14" viewBox="0 -4 100 18" preserveAspectRatio="none" style="--rotation-delay:-${(i*97)%600}ms;--float-delay:-${(i*113)%1100}ms" role="progressbar" aria-label="${esc(s.n)} progress to next level" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${Math.round(progress*100)}" aria-valuetext="${Math.round(progress*100)}% to next level">
+        <g transform="translate(0 4)">
+        <polygon class="stat-progress-track" points="${trackPoints}"/>
+        <polygon class="stat-progress-fill${animationKind?' is-'+animationKind:''}" points="${fillPoints}"/>
+        </g>${rewardMarkup}
+      </svg></g>`;
+    addButtons.push(`<button class="btn y stat-add-button" type="button" data-add-stat="${esc(s.id)}" aria-label="Log achievement for ${esc(s.n)}" style="left:${((x+barWidth+16)/640*100).toFixed(3)}%;top:${((y+49)/520*100).toFixed(3)}%">+</button>`);
+    statProgressTotals.set(s.id,total);
   });
+  if(rankUps.length)showRankUps(rankUps);
   $('star').innerHTML=h;
+  $('stat-add-buttons').innerHTML=addButtons.join('');
 }
 
+function drawCalendarArt(d){
+  const month=d.getMonth()+1,day=d.getDate(),weekday=d.toLocaleDateString('en',{weekday:'long'}),version=month<=2?'1':'0';
+  const hour=new Date().getHours(),timeOfDay=hour===0||hour>=21?1:hour<7?2:hour<11?3:hour<14?4:hour<19?5:6;
+  const monthImage=day<10?month:month*100;
+  const assets={
+    'day-bottom':`Day/${day}Bottom`,
+    'month-bottom':`Month/${monthImage}Bottom`,
+    'weekday-bottom':`Week/${weekday}Bottom`,
+    'time-of-day':`ToD/${timeOfDay}`,
+    'day-middle':`Day/${day}`,
+    'month-middle':`Month/${monthImage}`,
+    'weekday-middle':`Week/${weekday}`,
+    'day-top':`Day/${day}Top`,
+    'month-top':`Month/${monthImage}Top`,
+    'weekday-top':`Week/${weekday}Top`
+  };
+  document.querySelectorAll('[data-calendar-layer]').forEach(image=>{
+    const src=`Persona-5-Calendar-1.1/Assets/${assets[image.dataset.calendarLayer].replace('/','/'+version+'/')}.png`;
+    if(image.getAttribute('src')!==src)image.src=src;
+  });
+  const isToday=cur===fmt(new Date());
+  $('calendar-meta').textContent=`${d.getFullYear()}${isToday?' · TODAY':''}`;
+  $('hd').setAttribute('aria-label',`Persona 5 calendar: ${weekday}, ${d.toLocaleDateString('en',{month:'long',day:'numeric',year:'numeric'})}${isToday?', today':''}`);
+}
 function header(){
   const d=parse(cur);
-  $('hd').innerHTML=`${d.getMonth()+1}/${d.getDate()} ${d.toLocaleDateString('en',{weekday:'long'}).toUpperCase()}<small>${d.getFullYear()}${cur===fmt(new Date())?' · TODAY':''}</small>`;
+  drawCalendarArt(d);
   $('dp').value=cur;
+  $('achievement-date').textContent=d.toLocaleDateString('en',{weekday:'long',month:'long',day:'numeric',year:'numeric'});
+}
+function drawAchievementEntries(){
+  const d=S.days[cur]||{gains:[],journal:''};
+  const entries=d.gains.map((gain,index)=>({gain,index})).filter(({gain})=>!lastAchievementStatId||gain.s===lastAchievementStatId);
+  $('ents').innerHTML=entries.length?entries.map(({gain,index})=>{const st=S.stats.find(x=>x.id===gain.s);return `<div class="entry"><span class="amt ${gain.a<0?'neg':''}">${gain.a>0?'+':''}${gain.a}</span><b>${st?esc(st.n):'(deleted stat)'}</b><span class="n">${esc(gain.note||'')}</span><button class="btn sm" data-del="${index}" aria-label="Delete achievement">✕</button></div>`}).join(''):`<div class="muted">No ${lastAchievementStatId?esc(S.stats.find(s=>s.id===lastAchievementStatId)?.n||'stat')+' achievements':'achievements'} logged for this day yet.</div>`;
 }
 function drawToday(){
   header();
-  $('ls').innerHTML=S.stats.map(s=>`<option value="${s.id}">${esc(s.n)}</option>`).join('')||'<option value="">(add a stat first)</option>';
+  drawAchievementEntries();
   const d=S.days[cur]||{gains:[],journal:''};
-  $('ents').innerHTML=d.gains.length?d.gains.map((g,i)=>{const st=S.stats.find(x=>x.id===g.s);return `<div class="entry"><span class="amt ${g.a<0?'neg':''}">${g.a>0?'+':''}${g.a}</span><b>${st?esc(st.n):'(deleted stat)'}</b><span class="n">${esc(g.note||'')}</span><button class="btn sm" data-del="${i}">✕</button></div>`}).join(''):'<div class="muted">No achievements logged for this day yet.</div>';
   $('jr').value=d.journal||'';
 }
 function drawStats(){
   const t=totals();
-  $('slist').innerHTML=S.stats.map(s=>`<div class="statrow"><input class="grow" value="${esc(s.n)}" data-ren="${s.id}" aria-label="Stat name"><label class="threshold">Points / level<input class="threshold-input" type="number" min="1" step="1" required value="${pointsPerLevel(s)}" data-req="${s.id}" aria-label="Points required per level for ${esc(s.n)}"></label><span class="chip">LV ${lvl(t[s.id],pointsPerLevel(s))} · ${Math.round(t[s.id])} pts</span><button class="btn sm" data-rm="${s.id}">Delete</button></div>`).join('')||'<div class="muted">No stats yet.</div>';
+  $('slist').innerHTML=S.stats.map(s=>`<div class="statrow"><input class="grow" value="${esc(s.n)}" data-ren="${s.id}" aria-label="Stat name"><label class="threshold">Points / level<input class="threshold-input" type="number" min="1" step="1" required value="${pointsPerLevel(s)}" data-req="${s.id}" aria-label="Points required per level for ${esc(s.n)}"></label><span class="chip">LV ${lvl(t[s.id],pointsPerLevel(s))} · ${Math.round(t[s.id])} pts</span><select class="stat-reorder" data-swap="${s.id}" aria-label="Switch ${esc(s.n)} position with"${S.stats.length<2?' disabled':''}><option value="">Switch position with...</option>${S.stats.filter(other=>other.id!==s.id).map(other=>`<option value="${other.id}">${esc(other.n)}</option>`).join('')}</select><button class="btn sm" data-rm="${s.id}">Delete</button></div>`).join('')||'<div class="muted">No stats yet.</div>';
 }
 function drawHist(){
   const ks=Object.keys(S.days).filter(k=>S.days[k].gains.length||(S.days[k].journal||'').trim()).sort().reverse();
@@ -179,8 +455,42 @@ function drawHist(){
 }
 function all(){drawStar();drawGeneral();drawToday();drawStats();drawHist()}
 
-document.querySelectorAll('.tab').forEach(b=>b.onclick=()=>{
-  document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('on',x===b));
+let lastAchievementStatId=null;
+$('achievement-dialog').addEventListener('close',()=>{
+  const trigger=[...$('stat-add-buttons').querySelectorAll('[data-add-stat]')].find(button=>button.dataset.addStat===lastAchievementStatId);
+  (trigger||$('settings-toggle')).focus();
+});
+$('achievement-close').onclick=()=>$('achievement-dialog').close();
+$('achievement-dialog').addEventListener('click',e=>{
+  if(e.target===$('achievement-dialog'))$('achievement-dialog').close();
+});
+function openAchievementDialog(statId){
+  const stat=S.stats.find(s=>s.id===statId);
+  if(!stat)return;
+  lastAchievementStatId=statId;
+  $('achievement-stat').textContent=stat.n;
+  $('la').value='1';
+  $('ln').value='';
+  drawAchievementEntries();
+  $('achievement-dialog').showModal();
+  $('la').focus();
+}
+$('stat-add-buttons').addEventListener('click',e=>{
+  const button=e.target.closest('[data-add-stat]');
+  if(button)openAchievementDialog(button.dataset.addStat);
+});
+
+const settingsToggle=$('settings-toggle'),settingsOptions=$('settings-options');
+settingsToggle.onclick=()=>{
+  const isOpen=settingsToggle.getAttribute('aria-expanded')==='true';
+  settingsToggle.setAttribute('aria-expanded',String(!isOpen));
+  settingsOptions.hidden=isOpen;
+};
+document.querySelectorAll('[data-t]').forEach(b=>b.onclick=()=>{
+  const isSettingsPage=b.dataset.t!=='today';
+  document.querySelectorAll('nav .tab').forEach(x=>x.classList.toggle('on',x===b||(isSettingsPage&&x===settingsToggle)));
+  settingsToggle.setAttribute('aria-expanded','false');
+  settingsOptions.hidden=true;
   ['today','stats','hist'].forEach(id=>$(id).classList.toggle('hide',id!==b.dataset.t));
   if(b.dataset.t==='hist')drawHist();if(b.dataset.t==='stats')drawStats();
 });
@@ -188,18 +498,27 @@ function go(k){cur=k;drawToday()}
 function shift(n){const d=parse(cur);d.setDate(d.getDate()+n);go(fmt(d))}
 $('prev').onclick=()=>shift(-1);$('next').onclick=()=>shift(1);$('tod').onclick=()=>go(fmt(new Date()));
 $('dp').onchange=e=>{if(e.target.value)go(e.target.value)};
-$('ladd').onclick=()=>{
-  const s=$('ls').value,a=parseFloat($('la').value);
-  if(!s||!isFinite(a)||a===0)return;
-  day(cur).gains.push({s,a,note:$('ln').value.trim()});
-  $('ln').value='';save();drawToday();drawStar();drawGeneral();
+$('achievement-form').onsubmit=e=>{
+  e.preventDefault();
+  const a=parseFloat($('la').value);
+  $('la').setCustomValidity(a===0?'Enter an amount other than zero.':'');
+  if(!e.target.reportValidity()||!S.stats.some(s=>s.id===lastAchievementStatId)||!isFinite(a)||a===0)return;
+  day(cur).gains.push({s:lastAchievementStatId,a,note:$('ln').value.trim()});
+  $('la').value='1';$('ln').value='';save();drawAchievementEntries();drawStar();drawGeneral();$('achievement-dialog').close();
+  if(a>0)playPointsIncreaseSound();
 };
-$('ln').onkeydown=e=>{if(e.key==='Enter')$('ladd').click()};
-$('ents').onclick=e=>{const i=e.target.dataset.del;if(i===undefined)return;day(cur).gains.splice(+i,1);save();drawToday();drawStar();drawGeneral()};
+$('la').oninput=()=>$('la').setCustomValidity('');
+$('ents').onclick=e=>{const i=e.target.dataset.del;if(i===undefined)return;day(cur).gains.splice(+i,1);save();drawAchievementEntries();drawStar();drawGeneral()};
 let tm;$('jr').oninput=e=>{day(cur).journal=e.target.value;$('saved').textContent='Saving…';clearTimeout(tm);tm=setTimeout(()=>{save();$('saved').textContent='Auto-saved'},400)};
 $('nadd').onclick=()=>{const n=$('ns').value.trim();if(!n)return;S.stats.push({id:'s'+Date.now().toString(36)+Math.random().toString(36).slice(2,5),n,pointsPerLevel:10});$('ns').value='';save();all()};
 $('ns').onkeydown=e=>{if(e.key==='Enter')$('nadd').click()};
 $('slist').onchange=e=>{
+  const swapId=e.target.dataset.swap;
+  if(swapId){
+    const otherId=e.target.value,from=S.stats.findIndex(s=>s.id===swapId),to=S.stats.findIndex(s=>s.id===otherId);
+    if(otherId&&from!==-1&&to!==-1){[S.stats[from],S.stats[to]]=[S.stats[to],S.stats[from]];save();all()}
+    return;
+  }
   const id=e.target.dataset.ren;
   if(id){const s=S.stats.find(x=>x.id===id);if(s&&e.target.value.trim()){s.n=e.target.value.trim();save();drawStar();drawToday()}return}
   const reqId=e.target.dataset.req;
@@ -215,4 +534,7 @@ $('hl').onclick=e=>{const el=e.target.closest('[data-go]');if(!el)return;cur=el.
 $('exp').onclick=()=>{$('bk').value=JSON.stringify(S)};
 $('imp').onclick=()=>{try{const p=JSON.parse($('bk').value);if(p.stats&&p.days&&confirm('Replace all current data?')){S=p;save();all()}}catch(e){alert('Invalid data')}};
 all();
+setInterval(()=>drawCalendarArt(parse(cur)),60_000);
+initializeFileConnection().then(()=>all());
+$('connect-file').onclick=connectStatsFile;
 </script></body></html>

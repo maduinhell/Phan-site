@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 150">
+  <path d="m14 36 102-25-8 19 622-14-19 28 62 3-46 23 45 21-76-2 21 36-150-18-8 26-177-15-11 20-160-28-53 10 13-31-156 10 20-31-50-2 29-22-19-8Z" fill="#e60012" stroke="#09090b" stroke-width="14" stroke-linejoin="round"/>
+  <path d="m58 40 84-15-8 18 535-12-20 25 63 1-43 19 45 15-74-1 16 25-133-14-9 23-160-13-12 18-145-26-52 9 12-27-131 8 18-25-38-2 28-19-16-7Z" fill="#ffe600" stroke="#fff" stroke-width="5" stroke-linejoin="round"/>
+  <text x="400" y="104" text-anchor="middle" font-family="Impact, Haettenschweiler, 'Arial Narrow Bold', sans-serif" font-size="88" font-style="italic" font-weight="900" letter-spacing="-3" fill="#fff" stroke="#09090b" stroke-width="13" paint-order="stroke fill">RANK UP!</text>
+  <text x="400" y="104" text-anchor="middle" font-family="Impact, Haettenschweiler, 'Arial Narrow Bold', sans-serif" font-size="88" font-style="italic" font-weight="900" letter-spacing="-3" fill="#fff" stroke="#e60012" stroke-width="4" paint-order="stroke fill">RANK UP!</text>
+</svg>
