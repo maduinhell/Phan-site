@@ -1,0 +1,12 @@
+body {
+  --red: #f20b20;
+  --black: #09090b;
+  --white: #fff;
+  --muted: #bdbdc2;
+}
+
+.panel {
+  background-image: linear-gradient(rgba(0, 0, 0, .24), rgba(0, 0, 0, .30)), url("assets/designs/persona_5_wallpaper_by_photosstrator_dedbgtp-fullview.jpg");
+  background-position: center;
+  background-size: cover;
+}

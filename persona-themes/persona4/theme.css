@@ -1,0 +1,11 @@
+body {
+  --red: #e5ac19;
+  --black: #111827;
+  --white: #fff8df;
+  --muted: #c9c7b9;
+}
+
+.panel {
+  background-color: var(--black);
+  background-image: radial-gradient(ellipse at 12% 88%, rgba(224, 165, 20, .24), transparent 42%), linear-gradient(135deg, #172237, #111827 62%, #282313);
+}

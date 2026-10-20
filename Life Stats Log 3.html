@@ -1,0 +1,202 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Life Stats Log</title>
+<style>
+:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);--red:#1f6fe8;--yel:#4fd8ff;--blk:#070d1c;--wht:#fff}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:#070d1c;color:#fff;font-family:"Arial Black",Impact,Arial,sans-serif;min-height:100vh}
+.wrap{max-width:900px;margin:0 auto;padding:12px}
+header{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:10px}
+.date{background:#fff;color:#000;padding:4px 14px;transform:skewX(-8deg) rotate(-2deg);font-size:34px;line-height:1.1;border:3px solid #000;box-shadow:5px 5px 0 var(--red)}
+.date small{display:block;font-size:14px;letter-spacing:1px}
+nav{display:flex;gap:6px;margin-left:auto;flex-wrap:wrap}
+button,select,input,textarea{font:inherit}
+.tab,.btn{background:#000;color:#fff;border:2px solid #fff;padding:6px 14px;cursor:pointer;transform:skewX(-10deg);text-transform:uppercase;font-size:14px}
+.tab.on,.btn:hover,.tab:hover{background:var(--red);border-color:#fff}
+.btn.y{background:var(--yel);color:#000;border-color:#000}
+.btn.y:hover{background:#fff}
+.btn.sm{padding:2px 8px;font-size:12px}
+.panel{position:relative;background:#0a1428;border:3px solid #fff;overflow:hidden;margin-bottom:14px}
+.panel::before{content:"";position:absolute;inset:0;background:linear-gradient(115deg,#1b3a6e 0 34%,#12274b 34% 36%,#0a1428 36%)}
+.panel>*{position:relative}
+svg{display:block;width:100%;height:auto}
+.box{background:#0d1830;border:2px solid #fff;padding:12px;margin-bottom:14px;box-shadow:6px 6px 0 var(--red)}
+h2{margin:0 0 8px;font-size:18px;color:var(--yel);text-transform:uppercase;letter-spacing:1px;transform:skewX(-8deg)}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:8px}
+input,select,textarea{background:#fff;color:#000;border:2px solid #000;padding:7px 9px;font-family:Arial,sans-serif;font-weight:700;font-size:15px;max-width:100%}
+input[type=number]{width:100px}
+input.grow{flex:1;min-width:120px}
+textarea{width:100%;min-height:200px;resize:vertical;font-weight:400;line-height:1.5}
+.entry{display:flex;align-items:center;gap:8px;padding:6px 8px;background:#0a1428;border-left:6px solid var(--yel);margin-bottom:6px;font-family:Arial,sans-serif;font-weight:700}
+.entry .amt{background:var(--yel);color:#000;padding:1px 8px;transform:skewX(-10deg);font-family:"Arial Black",Arial}
+.entry .amt.neg{background:#ff4d6d;color:#fff}
+.entry span.n{flex:1;font-weight:400;opacity:.85}
+.muted{opacity:.6;font-family:Arial,sans-serif;font-weight:400;font-size:14px}
+.day{cursor:pointer;padding:8px 10px;background:#0a1428;border:2px solid #fff;margin-bottom:8px;font-family:Arial,sans-serif}
+.day:hover{border-color:var(--yel);background:#0a1a3a}
+.day b{font-family:"Arial Black",Arial;color:var(--yel)}
+.chip{display:inline-block;background:var(--yel);color:#000;font-size:12px;font-weight:800;padding:1px 7px;margin:3px 4px 0 0;transform:skewX(-10deg)}
+.statrow{display:flex;gap:8px;align-items:center;margin-bottom:6px;flex-wrap:wrap}
+.hide{display:none}
+</style></head>
+<body><div class="wrap">
+<header>
+  <div class="date" id="hd"></div>
+  <nav>
+    <button class="tab on" data-t="today">Today</button>
+    <button class="tab" data-t="stats">Stats</button>
+    <button class="tab" data-t="hist">History</button>
+  </nav>
+</header>
+
+<div class="panel"><svg id="star" viewBox="0 0 640 590"></svg></div>
+
+<section id="today">
+  <div class="box">
+    <h2>Day</h2>
+    <div class="row">
+      <button class="btn sm" id="prev">◀</button>
+      <input type="date" id="dp">
+      <button class="btn sm" id="next">▶</button>
+      <button class="btn sm y" id="tod">Today</button>
+    </div>
+  </div>
+  <div class="box">
+    <h2>Log an achievement</h2>
+    <div class="row">
+      <select id="ls"></select>
+      <input type="number" id="la" value="1" title="Points (can be negative)">
+      <input class="grow" id="ln" placeholder="What did you do? (optional)">
+      <button class="btn y" id="ladd">+ Add</button>
+    </div>
+    <div id="ents"></div>
+  </div>
+  <div class="box">
+    <h2>Journal</h2>
+    <textarea id="jr" placeholder="Dear diary… write about your day."></textarea>
+    <div class="muted" id="saved">Auto-saved</div>
+  </div>
+</section>
+
+<section id="stats" class="hide">
+  <div class="box">
+    <h2>Your stats</h2>
+    <div class="row"><input class="grow" id="ns" placeholder="New stat name (Guts, Cooking, Coding…)"><button class="btn y" id="nadd">+ Add stat</button></div>
+    <div id="slist"></div>
+    <p class="muted">Points are unlimited. Every 10 points = 1 level. Totals are computed from your daily logs.</p>
+  </div>
+  <div class="box">
+    <h2>Backup</h2>
+    <div class="row"><button class="btn sm" id="exp">Export JSON</button><button class="btn sm" id="imp">Import JSON</button></div>
+    <textarea id="bk" style="min-height:90px" placeholder="Exported data appears here. Paste data and press Import to restore."></textarea>
+  </div>
+</section>
+
+<section id="hist" class="hide">
+  <div class="box"><h2>Past days</h2><div id="hl"></div></div>
+</section>
+</div>
+
+<script>
+const KEY='statlog_v1';
+const RANKS=['Rookie','Novice','Adept','Skilled','Expert','Master','Legendary','Mythic','Transcendent'];
+let S={stats:[{id:'s1',n:'Knowledge'},{id:'s2',n:'Guts'},{id:'s3',n:'Charm'},{id:'s4',n:'Kindness'},{id:'s5',n:'Proficiency'}],days:{}};
+try{const r=localStorage.getItem(KEY);if(r){const p=JSON.parse(r);if(p&&p.stats&&p.days)S=p}}catch(e){}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
+const $=id=>document.getElementById(id);
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const fmt=d=>d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+const parse=k=>{const [y,m,d]=k.split('-').map(Number);return new Date(y,m-1,d)};
+let cur=fmt(new Date());
+const day=k=>S.days[k]||(S.days[k]={gains:[],journal:''});
+function totals(){const t={};S.stats.forEach(s=>t[s.id]=0);for(const k in S.days)S.days[k].gains.forEach(g=>{if(g.s in t)t[g.s]+=g.a});return t}
+const lvl=p=>Math.max(1,Math.floor(Math.max(p,0)/10)+1);
+const rank=l=>RANKS[Math.min(l-1,RANKS.length-1)]+(l>RANKS.length?' ∞':'');
+
+function drawStar(){
+  const t=totals(),n=S.stats.length,cx=350,cy=285,F='font-family="Arial Black,Impact,sans-serif" font-style="italic"';
+  let h=`<defs><pattern id="mesh" width="9" height="9" patternUnits="userSpaceOnUse"><path d="M0 0H9M0 0V9" stroke="#8fc1ff" stroke-width="1" opacity=".75"/></pattern></defs>
+  <g transform="skewX(-10) rotate(-4 120 50)"><text x="40" y="58" ${F} font-size="38" fill="#4fd8ff" stroke="#fff" stroke-width="2" paint-order="stroke">STATS UP!</text></g>
+  <g transform="skewX(-10)"><text x="70" y="88" ${F} font-size="19" fill="#fff">SOCIAL STATS</text></g>`;
+  if(!n){$('star').innerHTML=h+`<text x="320" y="300" fill="#fff" text-anchor="middle" font-size="22" ${F}>ADD A STAT TO BEGIN</text>`;return}
+  const max=Math.max(10,...Object.values(t));
+  const R=n<=5?56:Math.max(30,56-(n-5)*3.5);
+  // center mesh polygon
+  const m=Math.max(n,3);let poly=[];
+  for(let j=0;j<m;j++){const a=-Math.PI/2+j*2*Math.PI/m;const r=n>=3?24+60*Math.max(0,t[S.stats[j].id])/max:55;poly.push((cx+Math.cos(a)*r).toFixed(1)+','+(cy+Math.sin(a)*r).toFixed(1))}
+  h+=`<polygon points="${poly.join(' ')}" fill="#ffffff" fill-opacity=".28" stroke="#fff" stroke-width="3" stroke-linejoin="round"/><polygon points="${poly.join(' ')}" fill="url(#mesh)"/>`;
+  S.stats.forEach((s,i)=>{
+    const a=-Math.PI/2+i*2*Math.PI/n,x=cx+Math.cos(a)*195,y=cy+Math.sin(a)*165;
+    const p=Math.round(t[s.id]),l=lvl(p),nm=esc(s.n),fs=R*0.3,est=s.n.length*fs*0.62,tl=est>R*1.8?` textLength="${(R*1.8).toFixed(0)}" lengthAdjust="spacingAndGlyphs"`:'';
+    h+=`<g transform="translate(${x.toFixed(1)},${y.toFixed(1)})">
+      <circle r="${R+26}" fill="none" stroke="#7cc4ff" stroke-opacity=".28" stroke-width="2"/>
+      <circle r="${R+13}" fill="none" stroke="#7cc4ff" stroke-opacity=".5" stroke-width="2"/>
+      <circle r="${R}" fill="#2f80ff" fill-opacity=".93"/>
+      <text y="${(R*0.2).toFixed(1)}" text-anchor="middle" ${F} font-size="${(R*0.95).toFixed(0)}" fill="#fff" stroke="#0a2a6a" stroke-width="3" paint-order="stroke">${l}</text>
+      <text y="${(R*0.62).toFixed(1)}" text-anchor="middle" ${F} font-size="${fs.toFixed(0)}" fill="#fff"${tl}>${nm}</text>
+      <g transform="translate(0,${R+14}) skewX(-14)"><rect x="${-R}" y="-11" width="${R*2}" height="22" fill="#000" stroke="#4fd8ff" stroke-width="1.5"/><rect x="${-R+6}" y="-5" width="10" height="10" fill="#4fd8ff"/>
+      <text x="${-R+22}" y="5" ${F} font-size="12" fill="#fff">${rank(l)}</text></g>
+      <text y="${R+42}" text-anchor="middle" ${F} font-size="12" fill="#4fd8ff" stroke="#000" stroke-width="3" paint-order="stroke">${p} PTS</text></g>`;
+  });
+  $('star').innerHTML=h;
+}
+
+function header(){
+  const d=parse(cur);
+  $('hd').innerHTML=`${d.getMonth()+1}/${d.getDate()} ${d.toLocaleDateString('en',{weekday:'long'}).toUpperCase()}<small>${d.getFullYear()}${cur===fmt(new Date())?' · TODAY':''}</small>`;
+  $('dp').value=cur;
+}
+function drawToday(){
+  header();
+  $('ls').innerHTML=S.stats.map(s=>`<option value="${s.id}">${esc(s.n)}</option>`).join('')||'<option value="">(add a stat first)</option>';
+  const d=S.days[cur]||{gains:[],journal:''};
+  $('ents').innerHTML=d.gains.length?d.gains.map((g,i)=>{const st=S.stats.find(x=>x.id===g.s);return `<div class="entry"><span class="amt ${g.a<0?'neg':''}">${g.a>0?'+':''}${g.a}</span><b>${st?esc(st.n):'(deleted stat)'}</b><span class="n">${esc(g.note||'')}</span><button class="btn sm" data-del="${i}">✕</button></div>`}).join(''):'<div class="muted">No achievements logged for this day yet.</div>';
+  $('jr').value=d.journal||'';
+}
+function drawStats(){
+  const t=totals();
+  $('slist').innerHTML=S.stats.map(s=>`<div class="statrow"><input class="grow" value="${esc(s.n)}" data-ren="${s.id}"><span class="chip">LV ${lvl(t[s.id])} · ${Math.round(t[s.id])} pts</span><button class="btn sm" data-rm="${s.id}">Delete</button></div>`).join('')||'<div class="muted">No stats yet.</div>';
+}
+function drawHist(){
+  const ks=Object.keys(S.days).filter(k=>S.days[k].gains.length||(S.days[k].journal||'').trim()).sort().reverse();
+  $('hl').innerHTML=ks.length?ks.map(k=>{const d=S.days[k],dt=parse(k);
+    const sum={};d.gains.forEach(g=>sum[g.s]=(sum[g.s]||0)+g.a);
+    const chips=Object.keys(sum).map(id=>{const s=S.stats.find(x=>x.id===id);return `<span class="chip">${s?esc(s.n):'?'} ${sum[id]>0?'+':''}${sum[id]}</span>`}).join('');
+    const j=(d.journal||'').trim();
+    return `<div class="day" data-go="${k}"><b>${dt.toLocaleDateString('en',{weekday:'short',month:'short',day:'numeric',year:'numeric'})}</b><div>${chips}</div>${j?`<div class="muted" style="margin-top:4px">${esc(j.length>140?j.slice(0,140)+'…':j)}</div>`:''}</div>`}).join(''):'<div class="muted">Nothing logged yet. Your past days will show up here.</div>';
+}
+function all(){drawStar();drawToday();drawStats();drawHist()}
+
+document.querySelectorAll('.tab').forEach(b=>b.onclick=()=>{
+  document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('on',x===b));
+  ['today','stats','hist'].forEach(id=>$(id).classList.toggle('hide',id!==b.dataset.t));
+  if(b.dataset.t==='hist')drawHist();if(b.dataset.t==='stats')drawStats();
+});
+function go(k){cur=k;drawToday()}
+function shift(n){const d=parse(cur);d.setDate(d.getDate()+n);go(fmt(d))}
+$('prev').onclick=()=>shift(-1);$('next').onclick=()=>shift(1);$('tod').onclick=()=>go(fmt(new Date()));
+$('dp').onchange=e=>{if(e.target.value)go(e.target.value)};
+$('ladd').onclick=()=>{
+  const s=$('ls').value,a=parseFloat($('la').value);
+  if(!s||!isFinite(a)||a===0)return;
+  day(cur).gains.push({s,a,note:$('ln').value.trim()});
+  $('ln').value='';save();drawToday();drawStar();
+};
+$('ln').onkeydown=e=>{if(e.key==='Enter')$('ladd').click()};
+$('ents').onclick=e=>{const i=e.target.dataset.del;if(i===undefined)return;day(cur).gains.splice(+i,1);save();drawToday();drawStar()};
+let tm;$('jr').oninput=e=>{day(cur).journal=e.target.value;$('saved').textContent='Saving…';clearTimeout(tm);tm=setTimeout(()=>{save();$('saved').textContent='Auto-saved'},400)};
+$('nadd').onclick=()=>{const n=$('ns').value.trim();if(!n)return;S.stats.push({id:'s'+Date.now().toString(36)+Math.random().toString(36).slice(2,5),n});$('ns').value='';save();all()};
+$('ns').onkeydown=e=>{if(e.key==='Enter')$('nadd').click()};
+$('slist').onchange=e=>{const id=e.target.dataset.ren;if(!id)return;const s=S.stats.find(x=>x.id===id);if(s&&e.target.value.trim()){s.n=e.target.value.trim();save();drawStar();drawToday()}};
+$('slist').onclick=e=>{const id=e.target.dataset.rm;if(!id)return;const s=S.stats.find(x=>x.id===id);
+  if(s&&confirm('Delete "'+s.n+'"? Its logged points will no longer count.')){S.stats=S.stats.filter(x=>x.id!==id);save();all()}};
+$('hl').onclick=e=>{const el=e.target.closest('[data-go]');if(!el)return;cur=el.dataset.go;document.querySelector('[data-t=today]').click();drawToday();scrollTo(0,0)};
+$('exp').onclick=()=>{$('bk').value=JSON.stringify(S)};
+$('imp').onclick=()=>{try{const p=JSON.parse($('bk').value);if(p.stats&&p.days&&confirm('Replace all current data?')){S=p;save();all()}}catch(e){alert('Invalid data')}};
+all();
+</script></body></html>
+
+</body></html>

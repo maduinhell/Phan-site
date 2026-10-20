@@ -1,0 +1,69 @@
+body {
+  --red: #1f6fe8;
+  --black: #070d1c;
+  --white: #fff;
+  --muted: #bacadd;
+  --persona3-cyan: #4fd8ff;
+  --persona3-hover: #bdeeff;
+}
+
+.panel {
+  overflow: hidden;
+  margin-bottom: 14px;
+  border: 3px solid #fff;
+  background: #0a1428;
+  box-shadow: none;
+}
+
+.panel::before {
+  background: linear-gradient(115deg, #1b3a6e 0 34%, #12274b 34% 36%, #0a1428 36%);
+}
+
+.panel::after {
+  display: none;
+}
+
+body[data-theme="persona3"] .panel-calendar,
+body[data-theme="persona3"] .joker-sticker {
+  display: none;
+}
+
+body[data-theme="persona3"] #star polygon.persona3-radar-base {
+  fill: #fff;
+  stroke: #fff;
+}
+
+body[data-theme="persona3"] #star polygon.persona3-radar-mesh {
+  fill: url("#persona3-mesh");
+  stroke: none;
+}
+
+#star .persona3-stat-button {
+  cursor: pointer;
+}
+
+#star .persona3-stat-art {
+  transform-box: fill-box;
+  transform-origin: center;
+  transition: transform 150ms cubic-bezier(.2, .8, .2, 1), filter 150ms ease;
+}
+
+#star .persona3-stat-orb {
+  transition: fill 150ms ease;
+}
+
+#star .persona3-stat-button:hover .persona3-stat-art,
+#star .persona3-stat-button:focus-visible .persona3-stat-art {
+  filter: drop-shadow(0 0 8px var(--persona3-hover));
+  transform: scale(1.06);
+}
+
+#star .persona3-stat-button:hover .persona3-stat-orb,
+#star .persona3-stat-button:focus-visible .persona3-stat-orb {
+  fill: var(--persona3-hover);
+}
+
+#star .persona3-stat-button:active .persona3-stat-art {
+  transform: scale(.96);
+  transition-duration: 60ms;
+}
